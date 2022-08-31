@@ -26,7 +26,7 @@ PLUGINNAMES_NVCXX := $(patsubst plugin-%,%,$(filter plugin-%,$(wildcard *)))
 PLUGINNAMES := $(filter-out $(PLUGINNAMES_NVCXX),$(patsubst plugin-%,%,$(filter plugin-%,$(wildcard *))))
 
 MY_CXXFLAGS := -I$(TARGET_DIR) -DLIB_DIR=$(LIB_DIR)/$(TARGET_NAME) -DDISABLE_RFIT
-MY_LDFLAGS := -ldl -Wl,-rpath,$(LIB_DIR)/$(TARGET_NAME)
+MY_LDFLAGS := -rpath,$(LIB_DIR)/$(TARGET_NAME)
 LIB_LDFLAGS := -L$(LIB_DIR)/$(TARGET_NAME)
 
 ALL_DEPENDS := $(EXE_DEP)
@@ -177,3 +177,11 @@ $(OBJ_DIR)/$(TARGET_NAME)/test/%.cu.o: $(SRC_DIR)/$(TARGET_NAME)/test/%.cu
 $(TEST_DIR)/$(TARGET_NAME)/%: $(OBJ_DIR)/$(TARGET_NAME)/test/%.cu.o | $(LIBS)
 	@[ -d $(@D) ] || mkdir -p $(@D)
 	$(NVCXX) $^ $(LDFLAGS_NVCXX) $(MY_LDFLAGS) -o $@ -L$(LIB_DIR)/$(TARGET_NAME) $(patsubst %,-l%,$(LIBNAMES)) $(foreach dep,$(EXTERNAL_DEPENDS),$($(dep)_LDFLAGS))
+
+
+EIGEN_BASE := $(BASE_DIR)/external/eigen
+.PHONY: testEigenGPUNoFit
+testEigenGPUNoFit: $(SRC_DIR)/$(TARGET_NAME)/test/testEigenGPUNoFit.cu
+	@[ -d $(@D) ] || mkdir -p $(@D)
+	$(NVCXX) $^  $(NVCXX_CXXFLAGS) $(NVHPC_NVCXXFLAGS) $(MY_CXXFLAGS) -o $(TEST_DIR)/$(TARGET_NAME)/$@ -L$(LIB_DIR)/$(TARGET_NAME) -isystem $(EIGEN_BASE)
+

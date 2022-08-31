@@ -3,7 +3,6 @@
 #include <Eigen/Core>
 #include <Eigen/Eigenvalues>
 
-#include "CUDACore/cudaCheck.h"
 #include "test_common.h"
 
 using namespace Eigen;
@@ -43,16 +42,16 @@ void testEigenvalues() {
   std::cout << "The eigenvalues of M are:" << std::endl << (*ret) << std::endl;
   std::cout << "*************************\n\n" << std::endl;
 #endif
-  cudaCheck(cudaMalloc((void **)&m_gpu, sizeof(Matrix3d)));
-  cudaCheck(cudaMalloc((void **)&ret_gpu, sizeof(Eigen::SelfAdjointEigenSolver<Matrix3d>::RealVectorType)));
-  cudaCheck(cudaMemcpy(m_gpu, &m, sizeof(Matrix3d), cudaMemcpyHostToDevice));
+  cudaMalloc((void **)&m_gpu, sizeof(Matrix3d));
+  cudaMalloc((void **)&ret_gpu, sizeof(Eigen::SelfAdjointEigenSolver<Matrix3d>::RealVectorType));
+  cudaMemcpy(m_gpu, &m, sizeof(Matrix3d), cudaMemcpyHostToDevice);
 
   kernel<<<1, 1>>>(m_gpu, ret_gpu);
   cudaDeviceSynchronize();
 
-  cudaCheck(cudaMemcpy(mgpudebug, m_gpu, sizeof(Matrix3d), cudaMemcpyDeviceToHost));
-  cudaCheck(cudaMemcpy(
-      ret1, ret_gpu, sizeof(Eigen::SelfAdjointEigenSolver<Matrix3d>::RealVectorType), cudaMemcpyDeviceToHost));
+  cudaMemcpy(mgpudebug, m_gpu, sizeof(Matrix3d), cudaMemcpyDeviceToHost);
+  cudaMemcpy(
+      ret1, ret_gpu, sizeof(Eigen::SelfAdjointEigenSolver<Matrix3d>::RealVectorType), cudaMemcpyDeviceToHost);
 #if TEST_DEBUG
   std::cout << "GPU Generated Matrix M 3x3:\n" << (*mgpudebug) << std::endl;
   std::cout << "GPU The eigenvalues of M are:" << std::endl << (*ret1) << std::endl;

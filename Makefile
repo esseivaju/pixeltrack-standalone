@@ -346,6 +346,9 @@ TARGETS += $(TARGETS_SYCL)
 endif
 ifdef NVHPC_BASE
 TARGETS += $(TARGETS_NVHPC)
+# target specific to stdpar to build eigen test
+test_EigenGPUNoFit:
+	+$(MAKE) -C src/stdpar testEigenGPUNoFit
 endif
 # remove possible duplicates
 TARGETS := $(sort $(TARGETS))
@@ -360,6 +363,9 @@ TEST_INTELGPU_TARGETS := $(patsubst %,test_%_intelgpu,$(TARGETS))
 TEST_AUTO_TARGETS := $(patsubst %,test_%_auto,$(TARGETS))
 test: test_cpu test_auto
 ifdef CUDA_BASE
+test: test_nvidiagpu
+endif
+ifdef NVHPC_BASE
 test: test_nvidiagpu
 endif
 ifdef ROCM_BASE
@@ -440,6 +446,9 @@ $(1): $$(foreach dep,$$($(1)_EXTERNAL_DEPENDS),$$($$(dep)_DEPS)) | $(DATA_DEPS)
 
 test_$(1): test_$(1)_cpu test_$(1)_auto
 ifdef CUDA_BASE
+test_$(1): test_$(1)_nvidiagpu
+endif
+ifdef NVHPC_BASE
 test_$(1): test_$(1)_nvidiagpu
 endif
 ifdef ROCM_BASE
